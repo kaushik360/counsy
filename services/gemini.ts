@@ -10,8 +10,14 @@ const getAiClient = (): GoogleGenAI | null => {
   try {
     // Safely retrieve API key
     let apiKey = '';
-    if (typeof process !== 'undefined' && process.env) {
-      apiKey = process.env.API_KEY || '';
+    
+    // Check process.env (Standard/Node/Webpack)
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      apiKey = process.env.API_KEY;
+    } 
+    // Check import.meta.env (Vite)
+    else if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_API_KEY) {
+      apiKey = (import.meta as any).env.VITE_API_KEY;
     }
     
     // Initialize client (even with empty key, though calls might fail later)
