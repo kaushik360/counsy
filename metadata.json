@@ -1,0 +1,7 @@
+{
+  "name": "Counsy",
+  "description": "A student wellness platform with AI emotional support, journaling, daily check-ins, and streak tracking.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
