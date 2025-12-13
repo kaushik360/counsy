@@ -16,11 +16,26 @@ const getAiClient = (): GoogleGenAI | null => {
       apiKey = process.env.API_KEY;
     } 
     // Check import.meta.env (Vite)
-    else if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_API_KEY) {
-      apiKey = (import.meta as any).env.VITE_API_KEY;
+    else if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+      const env = (import.meta as any).env;
+      // Prioritize VITE_API_KEY, fallback to API_KEY
+      if (env.VITE_API_KEY) {
+        apiKey = env.VITE_API_KEY;
+      } else if (env.API_KEY) {
+        apiKey = env.API_KEY;
+      }
     }
     
-    // Initialize client (even with empty key, though calls might fail later)
+    // Clean the key (remove whitespace)
+    apiKey = apiKey.trim();
+
+    // If no key is found, return null to trigger Mock Mode
+    if (!apiKey) {
+      console.warn("Counsy: No API Key found. Running in Demo/Mock mode.");
+      return null;
+    }
+
+    // Initialize client
     aiInstance = new GoogleGenAI({ apiKey });
     return aiInstance;
   } catch (error) {
@@ -33,8 +48,26 @@ const getAiClient = (): GoogleGenAI | null => {
 export const getCounselorResponse = async (history: ChatMessage[], userMessage: string, userName: string = 'Friend'): Promise<string> => {
   try {
     const ai = getAiClient();
-    if (!ai) return "I'm having trouble connecting right now. Please try again later.";
+    
+    // --- MOCK MODE (No API Key) ---
+    if (!ai) {
+      // Simulate network delay for realism
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const lowerMsg = userMessage.toLowerCase();
+      if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+        return `Hello ${userName}! I'm running in Demo Mode right now, but I'm still here to listen. How are you feeling?`;
+      } else if (lowerMsg.includes('sad') || lowerMsg.includes('depressed') || lowerMsg.includes('lonely')) {
+        return "I'm sorry you're feeling this way. Remember, this feeling is temporary, and you are stronger than you know. (Demo Response)";
+      } else if (lowerMsg.includes('anxious') || lowerMsg.includes('stress')) {
+        return "Take a deep breath with me. Inhale... Exhale. Focus on this moment. You've got this. (Demo Response)";
+      } else if (lowerMsg.includes('thank')) {
+        return "You're very welcome! I'm glad I could help.";
+      }
+      return "I hear you, and I understand. Even though I'm in Demo Mode without an API connection, I want you to know your feelings are valid. Tell me more?";
+    }
 
+    // --- REAL AI MODE ---
     const model = 'gemini-2.5-flash';
     
     const prompt = `
@@ -70,7 +103,20 @@ export const getCounselorResponse = async (history: ChatMessage[], userMessage: 
 export const getMoodInsight = async (mood: string): Promise<string> => {
   try {
     const ai = getAiClient();
-    if (!ai) return "Remember to take care of yourself today.";
+    
+    // --- MOCK MODE ---
+    if (!ai) {
+        const mocks: Record<string, string> = {
+            'Ecstatic': "Ride this wave of energy! Use it to tackle your biggest goals today.",
+            'Happy': "Glad to see you smiling! Spread that positivity around.",
+            'Neutral': "A calm day is a good day. Steady progress wins the race.",
+            'Sad': "Be gentle with yourself today. It's okay to take a break.",
+            'Anxious': "One step at a time. You don't have to solve everything right now.",
+            'Focused': "You're in the zone! Keep crushing those tasks.",
+            'Sleepy': "Rest is productive too. Listen to your body and recharge."
+        };
+        return mocks[mood] || "Remember to take care of yourself today.";
+    }
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -86,7 +132,19 @@ export const getMoodInsight = async (mood: string): Promise<string> => {
 export const analyzeJournalEntry = async (text: string) => {
   try {
     const ai = getAiClient();
-    if (!ai) throw new Error("AI Client not initialized");
+
+    // --- MOCK MODE ---
+    if (!ai) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        return {
+            moodSummary: "Reflective and honest (Demo Analysis).",
+            productivityInsight: "Writing your thoughts down is the first step to clarity.",
+            recommendations: [
+                "Take a 5-minute walk to clear your head.",
+                "Drink a glass of water and stretch."
+            ]
+        };
+    }
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
