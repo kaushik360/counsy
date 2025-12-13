@@ -1,6 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ChatMessage } from "../types";
 
+// Declare process to avoid TypeScript "Cannot find name" error in browser/Vite environments
+declare const process: any;
+
 // Lazy initialization helper
 let aiInstance: GoogleGenAI | null = null;
 
@@ -11,14 +14,10 @@ const getAiClient = (): GoogleGenAI | null => {
     // Safely retrieve API key
     let apiKey = '';
     
-    // Check process.env (Standard/Node/Webpack)
-    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-      apiKey = process.env.API_KEY;
-    } 
-    // Check import.meta.env (Vite)
-    else if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+    // 1. Check import.meta.env (Vite) - Primary for Vercel
+    if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
       const env = (import.meta as any).env;
-      // Prioritize VITE_API_KEY, fallback to API_KEY
+      // Prioritize VITE_API_KEY
       if (env.VITE_API_KEY) {
         apiKey = env.VITE_API_KEY;
       } else if (env.API_KEY) {
@@ -26,8 +25,13 @@ const getAiClient = (): GoogleGenAI | null => {
       }
     }
     
+    // 2. Fallback: Check process.env (Standard/Node) if not found yet
+    if (!apiKey && typeof process !== 'undefined' && process.env) {
+      apiKey = process.env.API_KEY || process.env.VITE_API_KEY;
+    }
+
     // Clean the key (remove whitespace)
-    apiKey = apiKey.trim();
+    if (apiKey) apiKey = apiKey.trim();
 
     // If no key is found, return null to trigger Mock Mode
     if (!apiKey) {
