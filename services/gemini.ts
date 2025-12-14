@@ -1,44 +1,30 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ChatMessage } from "../types";
 
-// Declare process to avoid TypeScript "Cannot find name" error in browser/Vite environments
-declare const process: any;
+// Ensure TypeScript recognizes the injected process.env.API_KEY
+declare const process: { env: { API_KEY: string } };
 
 // Lazy initialization helper
 let aiInstance: GoogleGenAI | null = null;
 
+// Helper to check if we are running without an API key
+export const isDemoMode = (): boolean => {
+  return !process.env.API_KEY;
+};
+
 const getAiClient = (): GoogleGenAI | null => {
   if (aiInstance) return aiInstance;
 
+  // The API key is injected via vite.config.ts into process.env.API_KEY
+  const apiKey = process.env.API_KEY;
+
+  // If no key is found, return null to trigger Mock/Demo Mode
+  if (!apiKey) {
+    console.warn("Counsy: No API Key found in environment. Running in Demo/Mock mode.");
+    return null;
+  }
+
   try {
-    // Safely retrieve API key
-    let apiKey = '';
-    
-    // 1. Check import.meta.env (Vite) - Primary for Vercel
-    if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-      const env = (import.meta as any).env;
-      // Prioritize VITE_API_KEY
-      if (env.VITE_API_KEY) {
-        apiKey = env.VITE_API_KEY;
-      } else if (env.API_KEY) {
-        apiKey = env.API_KEY;
-      }
-    }
-    
-    // 2. Fallback: Check process.env (Standard/Node) if not found yet
-    if (!apiKey && typeof process !== 'undefined' && process.env) {
-      apiKey = process.env.API_KEY || process.env.VITE_API_KEY;
-    }
-
-    // Clean the key (remove whitespace)
-    if (apiKey) apiKey = apiKey.trim();
-
-    // If no key is found, return null to trigger Mock Mode
-    if (!apiKey) {
-      console.warn("Counsy: No API Key found. Running in Demo/Mock mode.");
-      return null;
-    }
-
     // Initialize client
     aiInstance = new GoogleGenAI({ apiKey });
     return aiInstance;
@@ -48,7 +34,7 @@ const getAiClient = (): GoogleGenAI | null => {
   }
 };
 
-// --- Helper: Mock Responses ---
+// --- Helper: Mock Responses (Fallback) ---
 const getMockChatResponse = async (userMessage: string, userName: string): Promise<string> => {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -79,6 +65,7 @@ export const getCounselorResponse = async (history: ChatMessage[], userMessage: 
     // REAL AI MODE
     const model = 'gemini-2.5-flash';
     
+    // Construct a context-aware prompt
     const prompt = `
       You are a compassionate, empathetic, and professional student wellness counselor named "Counsy AI".
       Your goal is to provide emotional support, stress management tips, and academic motivation.

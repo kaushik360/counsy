@@ -4,7 +4,7 @@ import { ArrowLeft, HeartHandshake, Info, Mic, Send, MicOff, MoreVertical } from
 import { useNavigate } from 'react-router-dom';
 import { ChatMessage } from '../types';
 import { getChatHistory, saveChatMessage, getUser } from '../services/storage';
-import { getCounselorResponse } from '../services/gemini';
+import { getCounselorResponse, isDemoMode } from '../services/gemini';
 
 const Counselor: React.FC = () => {
   const navigate = useNavigate();
@@ -119,8 +119,10 @@ const Counselor: React.FC = () => {
                 <div className="flex flex-col items-center">
                     <span className="font-bold text-gray-900 dark:text-white">Counsy AI</span>
                     <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
-                        <span className="text-[10px] font-medium text-teal-600 dark:text-teal-400">Online</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isDemoMode() ? 'bg-yellow-500' : 'bg-teal-500 animate-pulse'}`}></span>
+                        <span className="text-[10px] font-medium text-teal-600 dark:text-teal-400">
+                            {isDemoMode() ? 'Demo Mode' : 'Online'}
+                        </span>
                     </div>
                 </div>
                 <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
