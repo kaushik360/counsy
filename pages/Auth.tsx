@@ -86,48 +86,48 @@ const Auth: React.FC = () => {
 
   return (
     <Layout>
-      <div className="relative h-full p-8 flex flex-col bg-white dark:bg-gray-900 transition-colors duration-200">
+      <div className="relative h-full min-h-screen p-8 flex flex-col bg-white dark:bg-gray-900 transition-colors duration-200">
         {/* Background Blob */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-teal-50 dark:bg-teal-900/20 rounded-br-[100px] -z-0"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-teal-50 dark:bg-teal-900/20 rounded-br-[100px] pointer-events-none z-0"></div>
 
         {/* Back Button */}
-        <button onClick={() => navigate('/')} className="absolute top-12 left-8 z-10 p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm text-gray-600 dark:text-gray-300">
+        <button onClick={() => navigate('/')} className="absolute top-8 left-6 z-20 p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
            <ArrowLeft size={20} />
         </button>
 
-        <div className="mt-24 z-10">
-          <div className="mb-2">
+        <div className="mt-20 z-10 w-full">
+          <div className="mb-4">
             <Logo size={50} showText />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-gray-500 dark:text-gray-400 mb-8">
             {isLogin ? 'Your journey to peace continues here.' : 'Start your mental wellness journey.'}
           </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl flex items-center gap-2 text-sm font-medium">
-              <AlertCircle size={16} />
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl flex items-center gap-3 text-sm font-medium animate-fade-in">
+              <AlertCircle size={18} />
               {error}
             </div>
           )}
 
-          <form onSubmit={handleAuth} className="space-y-4">
+          <form onSubmit={handleAuth} className="space-y-5">
             
             {!isLogin && (
               <>
                  {/* Name Field */}
                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Full Name</label>
+                    <div className="relative group">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 group-focus-within:text-teal-500 transition-colors" size={20} />
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="John Doe"
-                        className="w-full pl-12 pr-4 py-3.5 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
+                        className="w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
                         required
                       />
                     </div>
@@ -135,27 +135,27 @@ const Auth: React.FC = () => {
 
                   {/* Username Field */}
                   <div>
-                    <div className="flex justify-between items-center mb-2">
-                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Username</label>
+                    <div className="flex justify-between items-center mb-2 ml-1">
+                       <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">Username</label>
                        {username && !isCheckingUser && (
                          <span className={`text-xs font-bold ${usernameAvailable ? 'text-teal-500' : 'text-red-500'}`}>
                            {usernameAvailable ? 'Available' : 'Taken'}
                          </span>
                        )}
                     </div>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold z-10 group-focus-within:text-teal-500 transition-colors">@</span>
                       <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value.replace(/\s+/g, ''))}
                         placeholder="username"
-                        className={`w-full pl-12 pr-10 py-3.5 border rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 ${username && usernameAvailable === false ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700'}`}
+                        className={`w-full pl-12 pr-10 py-4 border rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 ${username && usernameAvailable === false ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700'}`}
                         required
                         minLength={3}
                       />
                       {username && (
-                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                         <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
                             {isCheckingUser ? (
                               <div className="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
                             ) : usernameAvailable ? (
@@ -172,17 +172,17 @@ const Auth: React.FC = () => {
 
             {/* Email / Username Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">
                 {isLogin ? "Email or Username" : "Email Address"}
               </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 group-focus-within:text-teal-500 transition-colors" size={20} />
                 <input
                   type={isLogin ? "text" : "email"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={isLogin ? "username or email@example.com" : "your@example.com"}
-                  className="w-full pl-12 pr-4 py-3.5 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
+                  className="w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
                   required
                 />
               </div>
@@ -190,15 +190,15 @@ const Auth: React.FC = () => {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Password</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 group-focus-within:text-teal-500 transition-colors" size={20} />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-3.5 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
+                  className="w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
                   required
                 />
               </div>
@@ -206,7 +206,7 @@ const Auth: React.FC = () => {
 
             {isLogin && (
               <div className="flex justify-end">
-                <button type="button" className="text-sm text-teal-600 dark:text-teal-400 font-medium hover:underline">
+                <button type="button" className="text-sm text-teal-600 dark:text-teal-400 font-bold hover:underline">
                   Forgot Password?
                 </button>
               </div>
@@ -215,32 +215,35 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={!isLogin && !usernameAvailable}
-              className={`w-full py-4 font-bold rounded-2xl shadow-lg transition-all active:scale-[0.98] ${
+              className={`w-full py-4 font-bold rounded-2xl shadow-lg transition-all active:scale-[0.98] mt-4 ${
                 !isLogin && !usernameAvailable 
                  ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                 : 'bg-gradient-to-r from-teal-500 to-teal-400 text-white shadow-teal-500/30 hover:shadow-teal-500/40'
+                 : 'bg-gradient-to-r from-teal-500 to-teal-400 text-white shadow-teal-500/30 hover:shadow-teal-500/40 hover:scale-[1.02]'
               }`}
             >
               {isLogin ? 'Login' : 'Create Account'}
             </button>
           </form>
 
-          <div className="relative my-6">
+          <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-100 dark:border-gray-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-900 text-gray-400">OR</span>
+              <span className="px-4 bg-white dark:bg-gray-900 text-gray-400 font-medium">OR</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="w-full py-3.5 border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold rounded-2xl hover:bg-teal-50 dark:hover:bg-gray-800 transition-colors"
+            className="w-full py-4 border-2 border-teal-500 text-teal-600 dark:text-teal-400 font-bold rounded-2xl hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-colors"
           >
             {isLogin ? 'Create Account' : 'Login Instead'}
           </button>
+          
+          {/* Bottom spacing */}
+          <div className="h-8"></div>
         </div>
       </div>
     </Layout>

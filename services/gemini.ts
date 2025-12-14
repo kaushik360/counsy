@@ -48,30 +48,35 @@ const getAiClient = (): GoogleGenAI | null => {
   }
 };
 
+// --- Helper: Mock Responses ---
+const getMockChatResponse = async (userMessage: string, userName: string): Promise<string> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+      
+    const lowerMsg = userMessage.toLowerCase();
+    if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+      return `Hello ${userName}! I'm running in Demo Mode right now (connection issue), but I'm still here to listen. How are you feeling?`;
+    } else if (lowerMsg.includes('sad') || lowerMsg.includes('depressed') || lowerMsg.includes('lonely')) {
+      return "I'm sorry you're feeling this way. Remember, this feeling is temporary, and you are stronger than you know. (Demo Response)";
+    } else if (lowerMsg.includes('anxious') || lowerMsg.includes('stress')) {
+      return "Take a deep breath with me. Inhale... Exhale. Focus on this moment. You've got this. (Demo Response)";
+    } else if (lowerMsg.includes('thank')) {
+      return "You're very welcome! I'm glad I could help.";
+    }
+    return "I hear you, and I understand. I'm operating in offline mode currently, but I want you to know your feelings are valid. Tell me more?";
+};
+
 // --- Chat with Counselor ---
 export const getCounselorResponse = async (history: ChatMessage[], userMessage: string, userName: string = 'Friend'): Promise<string> => {
-  try {
-    const ai = getAiClient();
-    
-    // --- MOCK MODE (No API Key) ---
-    if (!ai) {
-      // Simulate network delay for realism
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const lowerMsg = userMessage.toLowerCase();
-      if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
-        return `Hello ${userName}! I'm running in Demo Mode right now, but I'm still here to listen. How are you feeling?`;
-      } else if (lowerMsg.includes('sad') || lowerMsg.includes('depressed') || lowerMsg.includes('lonely')) {
-        return "I'm sorry you're feeling this way. Remember, this feeling is temporary, and you are stronger than you know. (Demo Response)";
-      } else if (lowerMsg.includes('anxious') || lowerMsg.includes('stress')) {
-        return "Take a deep breath with me. Inhale... Exhale. Focus on this moment. You've got this. (Demo Response)";
-      } else if (lowerMsg.includes('thank')) {
-        return "You're very welcome! I'm glad I could help.";
-      }
-      return "I hear you, and I understand. Even though I'm in Demo Mode without an API connection, I want you to know your feelings are valid. Tell me more?";
-    }
+  const ai = getAiClient();
+  
+  // MOCK MODE: If no client available
+  if (!ai) {
+    return getMockChatResponse(userMessage, userName);
+  }
 
-    // --- REAL AI MODE ---
+  try {
+    // REAL AI MODE
     const model = 'gemini-2.5-flash';
     
     const prompt = `
@@ -96,67 +101,58 @@ export const getCounselorResponse = async (history: ChatMessage[], userMessage: 
       contents: prompt,
     });
 
-    return response.text || "I'm here for you. Could you tell me more?";
+    if (!response.text) throw new Error("Empty response from AI");
+
+    return response.text;
   } catch (error) {
-    console.error("AI Chat Error:", error);
-    return "I'm having a little trouble connecting right now. But I'm listening—how are you?";
+    console.error("AI Chat Error (Falling back to Demo Mode):", error);
+    // Graceful fallback to mock response if API fails (e.g., 401, Quota, Network)
+    return getMockChatResponse(userMessage, userName);
   }
 };
 
 // --- Quick Mood Insight ---
 export const getMoodInsight = async (mood: string): Promise<string> => {
-  try {
-    const ai = getAiClient();
-    
-    // --- MOCK MODE ---
-    if (!ai) {
-        const mocks: Record<string, string> = {
-            'Ecstatic': "Ride this wave of energy! Use it to tackle your biggest goals today.",
-            'Happy': "Glad to see you smiling! Spread that positivity around.",
-            'Neutral': "A calm day is a good day. Steady progress wins the race.",
-            'Sad': "Be gentle with yourself today. It's okay to take a break.",
-            'Anxious': "One step at a time. You don't have to solve everything right now.",
-            'Focused': "You're in the zone! Keep crushing those tasks.",
-            'Sleepy': "Rest is productive too. Listen to your body and recharge."
-        };
-        return mocks[mood] || "Remember to take care of yourself today.";
-    }
+  const ai = getAiClient();
+  const mockResponse = "Remember to take care of yourself today. (Offline Tip)";
+  
+  if (!ai) return mockResponse;
 
+  try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `The user is feeling "${mood}". Give a 1-sentence supportive insight or micro-tip for a student.`,
     });
-    return response.text || "Take a deep breath and keep going.";
+    return response.text || mockResponse;
   } catch (e) {
-    return "Remember to take care of yourself today.";
+    console.error("Mood Insight Error:", e);
+    return mockResponse;
   }
 };
 
 // --- Journal Analysis ---
 export const analyzeJournalEntry = async (text: string) => {
+  const ai = getAiClient();
+  
+  const mockAnalysis = {
+    moodSummary: "Reflective (Demo Analysis - Connection Failed)",
+    productivityInsight: "Writing helps clear the mind.",
+    recommendations: ["Take a deep breath.", "Stay consistent."]
+  };
+
+  if (!ai) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      return mockAnalysis;
+  }
+
   try {
-    const ai = getAiClient();
-
-    // --- MOCK MODE ---
-    if (!ai) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return {
-            moodSummary: "Reflective and honest (Demo Analysis).",
-            productivityInsight: "Writing your thoughts down is the first step to clarity.",
-            recommendations: [
-                "Take a 5-minute walk to clear your head.",
-                "Drink a glass of water and stretch."
-            ]
-        };
-    }
-
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Analyze this student journal entry: "${text}". 
       Return JSON with the following keys:
-      1. moodSummary: A concise summary of the emotional tone (e.g., 'Feeling generally positive with some notes of stress').
-      2. productivityInsight: An observation about productivity based on the text (e.g., 'You seem most productive on days you focus on Routine tasks').
-      3. recommendations: An array of 1-2 short, actionable wellness or study recommendations.`,
+      1. moodSummary: A concise summary of the emotional tone.
+      2. productivityInsight: An observation about productivity.
+      3. recommendations: An array of 1-2 short, actionable wellness recommendations.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -175,11 +171,7 @@ export const analyzeJournalEntry = async (text: string) => {
 
     return JSON.parse(response.text || '{}');
   } catch (error) {
-    console.error("Journal Analysis Error", error);
-    return {
-      moodSummary: "Entry saved.",
-      productivityInsight: "Keep tracking your thoughts to spot patterns.",
-      recommendations: ["Take a deep breath.", "Stay consistent."]
-    };
+    console.error("Journal Analysis Error:", error);
+    return mockAnalysis;
   }
 };

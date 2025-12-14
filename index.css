@@ -3,9 +3,33 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply font-sans bg-gray-100 antialiased text-gray-900;
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
   }
+  
+  body {
+    @apply font-sans bg-gray-50 dark:bg-black antialiased text-gray-900;
+  }
+}
+
+/* Fix for Chrome Autofill background color in dark mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #111827 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important; /* gray-800 */
+    -webkit-text-fill-color: white !important;
 }
 
 /* Custom Scrollbar for clean look */
