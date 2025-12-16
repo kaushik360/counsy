@@ -119,46 +119,12 @@ export const getMoodInsight = async (mood: string): Promise<string> => {
 
 // --- Journal Analysis ---
 export const analyzeJournalEntry = async (text: string) => {
-  const ai = getAiClient();
-  
-  const mockAnalysis = {
-    moodSummary: "Reflective (Demo Analysis - Connection Failed)",
-    productivityInsight: "Writing helps clear the mind.",
-    recommendations: ["Take a deep breath.", "Stay consistent."]
+  // BETA LIMIT: Disable journal analysis to save API calls
+  await new Promise(resolve => setTimeout(resolve, 800)); // Simulate processing delay
+
+  return {
+    moodSummary: "ai analysis feature is unavailable in the beta stage",
+    productivityInsight: "Keep writing to clear your mind.",
+    recommendations: ["Analysis will be available in the full version."]
   };
-
-  if (!ai) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      return mockAnalysis;
-  }
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `Analyze this student journal entry: "${text}". 
-      Return JSON with the following keys:
-      1. moodSummary: A concise summary of the emotional tone.
-      2. productivityInsight: An observation about productivity.
-      3. recommendations: An array of 1-2 short, actionable wellness recommendations.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            moodSummary: { type: Type.STRING },
-            productivityInsight: { type: Type.STRING },
-            recommendations: { 
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            }
-          }
-        }
-      }
-    });
-
-    return JSON.parse(response.text || '{}');
-  } catch (error) {
-    console.error("Journal Analysis Error:", error);
-    return mockAnalysis;
-  }
 };

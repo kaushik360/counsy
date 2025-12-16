@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import { ArrowLeft, HeartHandshake, Info, Mic, Send, MicOff, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ChatMessage } from '../types';
-import { getChatHistory, saveChatMessage, getUser } from '../services/storage';
+import { getChatHistory, saveChatMessage, getUser, checkChatLimit, incrementChatCount } from '../services/storage';
 import { getCounselorResponse, isDemoMode } from '../services/gemini';
 
 const Counselor: React.FC = () => {
@@ -87,6 +87,25 @@ const Counselor: React.FC = () => {
     saveChatMessage(userMsg);
     setInput('');
     setIsTyping(true);
+
+    // Check Daily Limit
+    if (checkChatLimit()) {
+        setTimeout(() => {
+            const limitMsg: ChatMessage = {
+                id: (Date.now() + 1).toString(),
+                role: 'model',
+                text: "Daily AI messages limited during beta.",
+                timestamp: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, limitMsg]);
+            saveChatMessage(limitMsg);
+            setIsTyping(false);
+        }, 600);
+        return;
+    }
+
+    // Increment Usage
+    incrementChatCount();
 
     const user = getUser();
     // Pass the user's full name to the AI service

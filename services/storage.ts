@@ -7,7 +7,8 @@ const STORAGE_KEYS = {
   MOODS: 'counsy_moods',
   JOURNALS: 'counsy_journals',
   STREAKS: 'counsy_streaks',
-  CHAT: 'counsy_chat_history'
+  CHAT: 'counsy_chat_history',
+  DAILY_USAGE: 'counsy_daily_usage'
 };
 
 // --- User Session ---
@@ -127,6 +128,33 @@ export const saveChatMessage = (message: ChatMessage): void => {
 
 export const clearChatHistory = (): void => {
   localStorage.removeItem(STORAGE_KEYS.CHAT);
+};
+
+// --- Usage Limits (Beta) ---
+const getDailyUsage = () => {
+  const data = localStorage.getItem(STORAGE_KEYS.DAILY_USAGE);
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (parsed.date === today) {
+      return parsed;
+    }
+  }
+  
+  // Reset for new day
+  return { date: today, chatCount: 0 };
+};
+
+export const checkChatLimit = (): boolean => {
+  const usage = getDailyUsage();
+  return usage.chatCount >= 3;
+};
+
+export const incrementChatCount = () => {
+  const usage = getDailyUsage();
+  usage.chatCount += 1;
+  localStorage.setItem(STORAGE_KEYS.DAILY_USAGE, JSON.stringify(usage));
 };
 
 // --- Streaks & Achievements ---
